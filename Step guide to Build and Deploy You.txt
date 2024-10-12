@@ -1,0 +1,177 @@
+Step guide to Build and Deploy You tube clone URL.
+
+Step 1 
+-Open VS code new window -Open terminal
+-Run mkdir day4_youtube_clone; cd day4_youtube_clone  (Making day4_youtube_clone folder and change directory to that folder)
+-Run git init (To initialize git) 
+-Run git clone https://github.com/piyushsachdeva/Youtube_Clone or https://github.com/Surdas96/YouTube_Clone.git
+(Git repo where folder is saved. You can also save your file into your git and used)
+-After this in c drive Youtube_Clone folder created and all files will be copied. 
+
+Step 2 
+
+-Open Azure Org. and create new project name -Youtube Clone 
+-Go to repos -files
+-Copy code from Push an existing repository from command line
+-Go to VS code make sure you are in Youtube_Clone folder which you have created above (if no then CD and foldername Youtube_Clone )
+-Run -git remote remove origin
+-Paste code git remote add origin https://sunetra96@dev.azure.com/sunetra96/Youtube%20Clone/_git/Youtube%20Clone (for example)
+-git push -u origin --all 
+and enter. 
+-Refresh Repos in azure org. your file will be visible. 
+
+Step 3
+
+-Go to azure account and search App service
+-Open App service
+-Create -Use Web App 
+-Create new resource Group -name YouTubeClone
+-Name -youtubeprojectsurdas
+-Code
+-Runtime -Node latest version -Node 18
+-Region -Any or -Canada east
+-Linux Plan -Create new YTClone 
+-Pricing Plan Free F1 or Basic (Free trial 16k)
+-Next -Next -Next -Next -review and create.
+-Go to Resource
+
+Step 4 
+
+-Go to Org. 
+-Go to Pipe Line
+-Crate pipe line
+-See last -use classic editor ( if you not seen classic editor option go to organisational setting -pipeline -setting -untick Disable classic editor option.) 
+-Select source -Azure repos git -Team Project Youtube Clone 
+-repo Youtube clone -Continue 
+-Select template -Empty job
+-Agent specification ubuntu latest or any
+-Get sources -keep as it is.
+-Agent click on + sign 
+-search npm -add -Click on npm you will see options. Keep as it is. 
+
+-Again + add npm -click npm -name npm build
+-command -select custom
+-command arguments -run build
+
+-Again + add -publish build artifacts 
+-Path to publish add build 
+eg. build
+-all other as it is.
+
+-Again + add azure app service deploy
+-Azure subscription -Free trial -authorised -login
+-App service type -app service on Linux 
+-Service name from dropdown
+-Package -remove last and add build
+eg. $(System.DefaultWorkingDirectory)/build
+-Run time stack -select 1.0 staticsite 
+
+-Now save and queue 
+-Save Comment- initial trigger
+-Save and run
+
+Step 5 
+
+#This will give agent Pool error for that you have to create new agent pool and agent.
+
+-Create agent at organizational setting
+-Go to org. and click on organizational agent.
+-Under Pipe line -Agent pool
+-New Pool
+-Pool type -Self hosted
+-Name any (SurdasPool)
+-Create
+-Open Pool created
+-Select agent. -new agent
+-Click on download
+-Open Power shell
+-Paste Create agent commands shown on azure
+-mkdir agent ; cd agent (It will create agent folder and change directory to agent)
+-Then paste 2nd command- -Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$HOME\Downloads\vsts-agent-win-x64-3.241.0.zip", "$PWD")
+-Then run 3rd command --.\config.cmd
+-Enter server URL (your org. URL -https://dev.azure.com/sunetra96)
+-PAT > enter only 
+-For personal access token
+-go to azure org. beside your profile logo there is user setting
+click on that. 
+-Personal access token 
+-New token
+-Name any -SurdasToken
+-Custom access
+-Show all scope 
+-Under agent pool -Tick read and manage -Create
+-Copy token and paste in power shell
+-Enter agent pool -Add your agent pool name -SurdasPool (again go back to azure devops org. setting -agent pool)
+-Enter agent name -Any -SurdasAgent
+-Enter work folder -Press enter only
+-Enter run agent as service -Enter only
+-Enter config autologon -Enter only 
+-Run 4th command from agent -- .\run.cmd
+-Your agent will be online.
+
+Step 6
+
+#Now Go to Pipe line -Run Pipeline
+-Select your agent pool and run. 
+
+-After completion you will see URL. Run in browser.
+
+If it still show Microsoft homepage
+-Go to Azure -App service -Open Your app service
+-Click on configuration
+-Click on new application
+-Name Website_Dyanamic_Cache
+-Value 0
+-Tick Deployment slot setting
+-Ok
+
+-Again New application
+-Name Website_Local_Cache_Option 
+-Value never
+-Tick Deployment slot setting
+-Ok
+-Save and continue 
+-Go to overview and start again.
+-Refresh URL or again run pipeline. 
+-Your application will be running. 
+
+------------------------------------------------------------
+
+Step 7 Release Pipe Line
+
+-Go to pipeline
+-Click release pipeline (If you don't see release pipeline option then go to Org. setting -Pipeline -Setting -Off classic release pipeline option.)
+-New Pipeline
+-Use Azure app service deployment -Apply
+-Name -Any -Dev Deployment -Close
+-Click on add artifacts 
+-Source type - build
+-Project -Youtube Clone (Your created name)
+-Source build pipeline -Youtube Clone CI
+-Add
+-If Click on thunder sign -You will see other option which is used trigger new deployment or new pull request. 
+if you enabled you will see branch. -Close. 
+
+-Under stages -There are Pre deployment and Post deployment conditions. 
+-Click on pre dep. Condition. -Two option After and manual only 
+-Artifacts filter -add Youtube Clone Branch Main
+-Click on 1 job 1 task (Or on Top You will see Tasks tab click on that )
+-Stage Name -Test Deployment
+-Subscription -Free trial 
+-Type -WebApp on Linux ( according to you web app service created earlier )
+-App service name - You created on Azure -youtubeprojectsurdas
+
+-Select -Run on agent 
+-Display name Any
+-Agent Pool -Select which one you created Self hosted
+
+-Now go to Deploy azure app service 
+- Add Azure subscription -App Service type -App Service name
+- Under Package or folder Click on 3 dot - select location _Youtube Clone-CI/drop
+- Rename pipeline name you will see at top 
+ ( All Pipeline>New release pipeline -edit and rename -YT_Clone_ReleasePipeLine )
+- Save
+
+- Click on create release - Add details and Create
+- Go to pipeline your pipe line start deploying. 
+- Go to web app service in azure portal and check Default domain. Open URL app was deployed.   
